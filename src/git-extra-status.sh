@@ -15,7 +15,7 @@ fi
 printf "   \n"
 for repo in $repos; do
 	repo=$(abspath "$repo")
-	if [[ -d "${repo}/.git" ]]; then
+	if [[ -e "${repo}/.git" ]]; then
 		cd $repo
 		BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 		if [[ "$BRANCH_NAME" == "HEAD" ]]; then
