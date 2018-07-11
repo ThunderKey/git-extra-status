@@ -8,28 +8,50 @@ NC='\033[0m'
 cwd=$PWD
 repos=$@
 
+for arg in "$@"; do
+	if [[ "$arg" == "--submodules" ]] || [[ "$arg" == "-s" ]]; then
+		shift
+		SUBMODULES="true"
+	fi
+done
+
 if [ $# -eq 0 ]; then
 	repos="${cwd}"
 fi
+
+print_git_status() {
+	local repo="$1"
+	local repo_name="$2"
+	local padding="$3"
+	local BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+	if [[ "$BRANCH_NAME" == "HEAD" ]]; then
+		local GIT_STATUS="${YELLOW}?${NC} Unknown branch"
+	else
+		local GIT_STATUS=$(git-status)
+	fi
+	printf "$padding[$repo_name] - ${BRANCH_NAME}\n"
+	if [[ -n $(git status --porcelain) ]]; then
+		printf "$padding   ${GIT_STATUS} ${RED}x${NC} Uncommitted Changes\n"
+	else
+		printf "$padding   ${GIT_STATUS}\n"
+	fi
+	printf "\n\n"
+	if [[ "$SUBMODULES" == "true" ]]; then
+		repo_path="$PWD"
+		for submodule in $(git submodule status | awk '{print $2}'); do
+			pushd $submodule > /dev/null
+			print_git_status "$submodule" "$submodule" "$padding   "
+			popd > /dev/null
+		done
+	fi
+}
 
 printf "   \n"
 for repo in $repos; do
 	repo=$(abspath "$repo")
 	if [[ -e "${repo}/.git" ]]; then
-		cd $repo
-		BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-		if [[ "$BRANCH_NAME" == "HEAD" ]]; then
-			GIT_STATUS="${YELLOW}?${NC} Unknown branch"
-		else
-			GIT_STATUS=$(git-status)
-		fi
-		printf " [$(basename "$repo")] - ${BRANCH_NAME}\n"
-		if [[ -n $(git status --porcelain) ]]; then
-			printf "    ${GIT_STATUS} ${RED}x${NC} Uncommitted Changes\n"
-		else
-			printf "    ${GIT_STATUS}\n"
-		fi
-		printf "\n\n"
-		cd $cwd
+		pushd $repo > /dev/null
+		print_git_status $repo "$(basename "$repo")" " "
+		popd > /dev/null
 	fi
 done
