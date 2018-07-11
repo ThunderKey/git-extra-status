@@ -35,7 +35,7 @@ print_git_status() {
 	else
 		printf "$padding   ${GIT_STATUS}\n"
 	fi
-	printf "\n\n"
+	printf "\n"
 	if [[ "$SUBMODULES" == "true" ]]; then
 		repo_path="$PWD"
 		for submodule in $(git submodule status | awk '{print $2}'); do
