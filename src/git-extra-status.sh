@@ -12,6 +12,13 @@ for arg in "$@"; do
 	if [[ "$arg" == "--submodules" ]] || [[ "$arg" == "-s" ]]; then
 		shift
 		SUBMODULES="true"
+	elif [[ "$arg" == "--verbose" ]] || [[ "$arg" == "-v" ]]; then
+		shift
+		VERBOSE="true"
+	elif [[ "$arg" == "-sv" ]] || [[ "$arg" == "-vs" ]]; then
+		shift
+		VERBOSE="true"
+		SUBMODULES="true"
 	fi
 done
 
@@ -35,7 +42,9 @@ print_git_status() {
 	else
 		printf "$padding   ${GIT_STATUS}\n"
 	fi
-	printf "\n"
+  if [[ "$VERBOSE" == "true" ]]; then
+    git status --short
+  fi
 	if [[ "$SUBMODULES" == "true" ]]; then
 		repo_path="$PWD"
 		for submodule in $(git submodule status | awk '{print $2}'); do
