@@ -34,7 +34,9 @@ print_git_status() {
 	local repo_name="$2"
 	local padding="$3"
 	local BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-	git fetch > /dev/null
+	if [[ "$FETCH" == "true" ]]; then
+		git fetch --quiet
+	fi
 	if [[ "$BRANCH_NAME" == "HEAD" ]]; then
 		local GIT_STATUS="${YELLOW}?${NC} Unknown branch"
 	else
